@@ -4,7 +4,7 @@ with open('requirements.txt', 'r') as file:
     requirements = file.readlines()
 
 setup(name="g2sd",
-      version="0.1",
+      version="0.2",
       description="Extract and save Skype chats.",
       url="https://github.com/thismachinechills/grub2systemd",
       author="thismachinechills (Alex)",
