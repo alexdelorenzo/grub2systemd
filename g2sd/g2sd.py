@@ -17,10 +17,6 @@ INIT_RE = compile("initrd(?:[\t ])(?P<initrd>.*)")
 MenuEntry = namedtuple('MenuEntry', 'name kernel root initrd')
 
 
-with open("grub.cfg", "r") as file:
-    INPUT = file.read().splitlines()
-
-
 def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
     args = []
 
