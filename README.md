@@ -1,4 +1,4 @@
-#grub2systemd
+# grub2systemd
 
 Convert Grub2 grub.cfg menuentries to systemd-boot EFI loader entries
 
