@@ -8,7 +8,6 @@ import click
 
 PREFIX = 'test'
 SUFFIX = "g2sd"
-
 NAME_RE = compile("menuentry '(?P<name>[\w\d\W\D]*)' -")
 KERNEL_RE = compile("linux(?:[\t ]*)(?P<kernel>.*) root=(?P<root>[\w\d\-=\/]*) (?P<options>.*)")
 INIT_RE = compile("initrd(?:[\t ])(?P<initrd>.*)")
