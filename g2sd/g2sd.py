@@ -81,7 +81,7 @@ def cmd(grub_file: str, path: str):
         grub = file.read().splitlines()
 
     for index, me in enumerate(gen_menu_entries(grub)):
-        with open(path + f'/loaders/entries/{index}_{SUFFIX}.conf', 'w') as file:
+        with open(path + f'/loaders/entries/{index}_{SUFFIX}.conf', 'w+') as file:
             file.write(menuentry_to_systemd(me))
 
 
