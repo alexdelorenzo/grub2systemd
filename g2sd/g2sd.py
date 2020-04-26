@@ -2,6 +2,7 @@ from typing import Iterable, NamedTuple
 from re import compile
 from collections import namedtuple
 from subprocess import getoutput
+from sys import exit
 
 import click
 
@@ -51,7 +52,7 @@ def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
 
         except Exception as ex:
             print(args, ex)
-            break
+            exit(1)
 
 
 def convert_root_entry(root_str: str) -> str:
@@ -71,11 +72,17 @@ def convert_root_entry(root_str: str) -> str:
 
     return partuuid_str
 
+def parse_options(options_str: str) -> str:
+    options = options_str.split(' ')
+
+    return ' '.join(option for option in options
+                    if not option.startswith('$'))
 
 def menuentry_to_systemd(me: MenuEntry) -> str:
     partuuid = convert_root_entry(me.root)
+    options = ' '.join((partuuid, parse_options(me.options)))
 
-    return "title %s\nlinux %s\ninitrd %s\noptions %s" % (me.name, me.kernel, me.initrd, partuuid)
+    return "title %s\nlinux %s\ninitrd %s\noptions %s" % (me.name, me.kernel, me.initrd, options)
 
 
 @click.command(help="Convert your grub.cfg bootloader entries into systemd-boot loaders. GRUB_FILE is usually located in /boot/grub and your ESP_PATH is usually /boot.")
@@ -86,9 +93,10 @@ def cmd(grub_file: str, path: str):
         grub = file.read().splitlines()
 
     for index, me in enumerate(gen_menu_entries(grub)):
-        with open(path + f'/loaders/entries/{index}_{SUFFIX}.conf', 'w+') as file:
+        with open(path + f'/loader/entries/{index}_{SUFFIX}.conf', 'w+') as file:
             file.write(menuentry_to_systemd(me))
+            print("Wrote %s to %s" % (me.name, file.name))
 
-
+            
 if __name__ == "__main__":
     cmd()
