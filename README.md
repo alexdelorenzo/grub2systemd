@@ -9,3 +9,6 @@ Requires `blkid` to be installed.
 
 ## Usage
 `g2sd /boot/grub/grub.cfg /boot`
+
+## License
+See `LICENSE`. Message me if you'd like to use this project with a different license.
