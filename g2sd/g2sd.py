@@ -88,12 +88,12 @@ def menuentry_to_systemd(me: MenuEntry) -> str:
 @click.command(help="Convert your grub.cfg bootloader entries into systemd-boot loaders. GRUB_FILE is usually located in /boot/grub and your ESP_PATH is usually /boot.")
 @click.argument("grub_file", type=click.Path(dir_okay=False, exists=True, readable=True))
 @click.argument("esp_path", type=click.Path(dir_okay=True, exists=True, writable=True))
-def cmd(grub_file: str, path: str):
+def cmd(grub_file: str, esp_path: str):
     with open(grub_file, "r") as file:
         grub = file.read().splitlines()
 
     for index, me in enumerate(gen_menu_entries(grub)):
-        with open(path + f'/loader/entries/{index}_{SUFFIX}.conf', 'w+') as file:
+        with open(esp_path + f'/loader/entries/{index}_{SUFFIX}.conf', 'w+') as file:
             file.write(menuentry_to_systemd(me))
             print("Wrote %s to %s" % (me.name, file.name))
 
