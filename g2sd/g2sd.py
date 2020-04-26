@@ -9,19 +9,12 @@ import click
 
 PREFIX = 'test'
 SUFFIX = "g2sd"
-
 NAME_RE = compile("menuentry '(?P<name>[\w\d\W\D]*)' -")
 KERNEL_RE = compile("linux(?:[\t ]*)(?P<kernel>.*) root=(?P<root>[\w\d\-=\/]*) (?P<options>.*)")
 INIT_RE = compile("initrd(?:[\t ])(?P<initrd>.*)")
 
 
-#MenuEntry = namedtuple('MenuEntry', 'name kernel root initrd')
-class MenuEntry(NamedTuple):
-    name: str
-    kernel: str
-    root: str
-    options: str
-    initrd: str
+MenuEntry = namedtuple('MenuEntry', 'name kernel root options initrd')
 
 
 def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
@@ -52,8 +45,8 @@ def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
                 args = []
 
         except Exception as ex:
-            print(args, ex)
-            exit(1)
+            print("Error parsing file:", ex)
+            exit(0)
 
 
 def convert_root_entry(root_str: str) -> str:
@@ -79,7 +72,6 @@ def parse_options(options_str: str) -> str:
 
     return ' '.join(option for option in options
                     if not option.startswith('$'))
-
 
 def menuentry_to_systemd(me: MenuEntry) -> str:
     partuuid = convert_root_entry(me.root)
