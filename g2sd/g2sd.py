@@ -20,6 +20,7 @@ class MenuEntry(NamedTuple):
     name: str
     kernel: str
     root: str
+    options: str
     initrd: str
 
 
@@ -72,11 +73,13 @@ def convert_root_entry(root_str: str) -> str:
 
     return partuuid_str
 
+
 def parse_options(options_str: str) -> str:
     options = options_str.split(' ')
 
     return ' '.join(option for option in options
                     if not option.startswith('$'))
+
 
 def menuentry_to_systemd(me: MenuEntry) -> str:
     partuuid = convert_root_entry(me.root)
