@@ -4,8 +4,8 @@ with open('requirements.txt', 'r') as file:
     requirements = file.readlines()
 
 setup(name="g2sd",
-      version="1.1.1",
-      description="Extract and save Skype chats.",
+      version="1.1.2",
+      description="Convert GRUB menu entries into Systemd-boot boot loaders.",
       url="https://github.com/thismachinechills/grub2systemd",
       author="thismachinechills (Alex)",
       license="AGPL 3.0",
