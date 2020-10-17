@@ -1,19 +1,28 @@
-from typing import Iterable
+from typing import Iterable, NamedTuple
 from re import compile
 from collections import namedtuple
 from subprocess import getoutput
+from pathlib import Path
+from sys import exit
 
 import click
 
 
 PREFIX = 'test'
 SUFFIX = "g2sd"
+RC_PARSE_ERR = 1
+
 NAME_RE = compile("menuentry '(?P<name>[\w\d\W\D]*)' -")
 KERNEL_RE = compile("linux(?:[\t ]*)(?P<kernel>.*) root=(?P<root>[\w\d\-=\/]*) (?P<options>.*)")
 INIT_RE = compile("initrd(?:[\t ])(?P<initrd>.*)")
 
 
-MenuEntry = namedtuple('MenuEntry', 'name kernel root options initrd')
+class MenuEntry(NamedTuple):
+    name: str
+    kernel: str
+    root: str
+    options: str
+    initrd: str
 
 
 def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
@@ -43,21 +52,21 @@ def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
 
                 args = []
 
-        except Exception as ex:
-            print("Error parsing file:", ex)
-            exit(0)
+        except Exception as e:
+            print("Error parsing file:", e)
+            exit(RC_PARSE_ERR)
 
 
 def convert_root_entry(root_str: str) -> str:
     if root_str.startswith('UUID'):
         _, uuid = root_str.split('=')
-        cmd = "blkid -t %s" % root_str
+        cmd = f"blkid -t {root_str}"
 
     elif root_str.startswith("PARTUUID"):
         return root_str
 
     else:
-        cmd = "blkid %s" % root_str
+        cmd = f"blkid {root_str}"
 
     blkid_out = getoutput(cmd)
     partuuid_str = blkid_out.split(' ')[-1]
@@ -76,20 +85,20 @@ def menuentry_to_systemd(me: MenuEntry) -> str:
     partuuid = convert_root_entry(me.root)
     options = ' '.join((partuuid, parse_options(me.options)))
 
-    return "title %s\nlinux %s\ninitrd %s\noptions %s" % (me.name, me.kernel, me.initrd, options)
+    return f"title {me.name}\nlinux {me.kernel}\ninitrd {me.initrd}\noptions {options}"
 
 
 @click.command()
 @click.argument("grub_file")
 @click.argument("path")
 def cmd(grub_file: str, path: str):
-    with open(grub_file, "r") as file:
-        grub = file.read().splitlines()
+    grub_file = Path(grub_file)
+    grub_txt = grub_file.read_text().splitlines()
 
-    for index, me in enumerate(gen_menu_entries(grub)):
-        with open(path + f'/loader/entries/{index}_{SUFFIX}.conf', 'w+') as file:
-            file.write(menuentry_to_systemd(me))
-            print("Wrote %s to %s" % (me.name, file.name))
+    for index, me in enumerate(gen_menu_entries(grub_txt)):
+        file = Path(f'/loader/entries/{index}_{SUFFIX}.conf')
+        file.write_text(menuentry_to_systemd(me))
+        print(f"Wrote {me.name} to {file.name}")
 
 
 if __name__ == "__main__":
