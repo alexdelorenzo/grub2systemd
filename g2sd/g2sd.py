@@ -9,7 +9,6 @@ import logging
 import click
 
 
-PREFIX = 'test'
 SUFFIX = "g2sd"
 RC_PARSE_ERR = 1
 
