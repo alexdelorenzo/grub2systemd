@@ -1,9 +1,10 @@
-from typing import Iterable, NamedTuple
+from typing import Iterable, NamedTuple, List
 from re import compile
 from collections import namedtuple
 from subprocess import getoutput
 from pathlib import Path
 from sys import exit
+import logging
 
 import click
 
@@ -25,10 +26,10 @@ class MenuEntry(NamedTuple):
     initrd: str
 
 
-def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
-    args = []
+def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
+    args: List[str] = []
 
-    for num, line in enumerate(input):
+    for num, line in enumerate(lines):
         try:
             line = line.strip()
 
@@ -41,8 +42,8 @@ def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
                 args.extend(name)
 
             elif line.startswith("linux"):
-                all = KERNEL_RE.findall(line)
-                args.extend(all[0])
+                arg, _ = KERNEL_RE.findall(line)
+                args.extend(arg)
 
             elif line.startswith("initrd"):
                 init = INIT_RE.findall(line)
@@ -53,14 +54,15 @@ def gen_menu_entries(input: Iterable[str]) -> Iterable[MenuEntry]:
                 args = []
 
         except Exception as e:
-            print("Error parsing file:", e)
+            logging.error("Error parsing file:", e)
             exit(RC_PARSE_ERR)
 
 
 def convert_root_entry(root_str: str) -> str:
     if root_str.startswith('UUID'):
         _, uuid = root_str.split('=')
-        cmd = f"blkid -t {root_str}"
+        # cmd = f"blkid -t {root_str}"
+        cmd = f"blkid -t {uuid}"
 
     elif root_str.startswith("PARTUUID"):
         return root_str
@@ -69,7 +71,7 @@ def convert_root_entry(root_str: str) -> str:
         cmd = f"blkid {root_str}"
 
     blkid_out = getoutput(cmd)
-    partuuid_str = blkid_out.split(' ')[-1]
+    *_, partuuid_str = blkid_out.split(' ')
     partuuid_str = partuuid_str.replace('"', '')
 
     return partuuid_str
@@ -78,14 +80,20 @@ def convert_root_entry(root_str: str) -> str:
 def parse_options(options_str: str) -> str:
     options = options_str.split(' ')
 
-    return ' '.join(option for option in options
-                    if not option.startswith('$'))
+    return ' '.join(
+        option 
+        for option in options
+        if not option.startswith('$')
+    )
+
 
 def menuentry_to_systemd(me: MenuEntry) -> str:
     partuuid = convert_root_entry(me.root)
-    options = ' '.join((partuuid, parse_options(me.options)))
+    options = parse_options(me.options)
+    line = partuuid, options
+    line_str = ' '.join(line)
 
-    return f"title {me.name}\nlinux {me.kernel}\ninitrd {me.initrd}\noptions {options}"
+    return f"title {me.name}\nlinux {me.kernel}\ninitrd {me.initrd}\noptions {line_str}"
 
 
 @click.command()
@@ -93,14 +101,16 @@ def menuentry_to_systemd(me: MenuEntry) -> str:
 @click.argument("path")
 def cmd(grub_file: str, path: str):
     grub_file = Path(grub_file)
-    grub_txt = grub_file.read_text().splitlines()
+    grub_lines = grub_file.read_text().splitlines()
+    entries_gen = gen_menu_entries(grub_lines)
 
-    for index, me in enumerate(gen_menu_entries(grub_txt)):
+    for index, me in enumerate(entries_gen):
         file = Path(f'/loader/entries/{index}_{SUFFIX}.conf')
-        file.write_text(menuentry_to_systemd(me))
-        print(f"Wrote {me.name} to {file.name}")
+        text = menuentry_to_systemd(me)
+
+        file.write_text(text)
+        logging.info(f"Wrote {me.name} to {file.name}")
 
 
 if __name__ == "__main__":
     cmd()
-
