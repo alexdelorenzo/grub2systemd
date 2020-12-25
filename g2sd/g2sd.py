@@ -48,7 +48,6 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
                 args.extend(init)
 
                 yield MenuEntry(*args)
-
                 args = []
 
         except Exception as e:
