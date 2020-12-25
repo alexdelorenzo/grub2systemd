@@ -4,7 +4,7 @@ from setuptools import setup
 
 reqs = Path('requirements.txt') \
          .read_text() \
-         .split('\n')
+         .splitlines()
 
 setup(name="g2sd",
       version="1.3.1",
