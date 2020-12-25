@@ -37,7 +37,6 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
                     args = []
 
                 name = NAME_RE.findall(line)
-
                 args.extend(name)
 
             elif line.startswith("linux"):
