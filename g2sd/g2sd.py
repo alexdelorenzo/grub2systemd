@@ -51,7 +51,7 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
                 args = []
 
         except Exception as e:
-            logging.error("Error parsing file:", e)
+            logging.error(f"Error parsing file: {e}")
             exit(RC_PARSE_ERR)
 
 
