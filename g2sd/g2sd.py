@@ -103,7 +103,7 @@ def cmd(grub_file: str, path: str):
     entries_gen = gen_menu_entries(grub_lines)
 
     for index, me in enumerate(entries_gen):
-        file = Path(f'/loader/entries/{index}_{SUFFIX}.conf')
+        file = Path(f'{path}/loader/entries/{index}_{SUFFIX}.conf')
         text = menuentry_to_systemd(me)
 
         file.write_text(text)
