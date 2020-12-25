@@ -40,7 +40,7 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
                 args.extend(name)
 
             elif line.startswith("linux"):
-                arg, _ = KERNEL_RE.findall(line)
+                arg, *_ = KERNEL_RE.findall(line)
                 args.extend(arg)
 
             elif line.startswith("initrd"):
@@ -58,9 +58,9 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
 
 def convert_root_entry(root_str: str) -> str:
     if root_str.startswith('UUID'):
-        _, uuid = root_str.split('=')
-        # cmd = f"blkid -t {root_str}"
-        cmd = f"blkid -t {uuid}"
+        # _, uuid = root_str.split('=')
+        cmd = f"blkid -t {root_str}"
+        # cmd = f"blkid -t {uuid}"
 
     elif root_str.startswith("PARTUUID"):
         return root_str
@@ -71,7 +71,7 @@ def convert_root_entry(root_str: str) -> str:
     blkid_out = getoutput(cmd)
     *_, partuuid_str = blkid_out.split(' ')
     partuuid_str = partuuid_str.replace('"', '')
-
+    breakpoint()
     return partuuid_str
 
 
