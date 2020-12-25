@@ -16,7 +16,7 @@ Requires `blkid` to be installed on the system.
 
 ### Help
 ```bash
-Usage: g2sd.py [OPTIONS] GRUB_FILE ESP_PATH
+Usage: g2sd [OPTIONS] GRUB_FILE ESP_PATH
 
   Convert your grub.cfg bootloader entries into systemd-boot loaders.
   GRUB_FILE is usually located in /boot/grub and your ESP_PATH is usually
