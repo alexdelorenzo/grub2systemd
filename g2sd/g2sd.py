@@ -28,7 +28,7 @@ class MenuEntry(NamedTuple):
 def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
     args: List[str] = []
 
-    for num, line in enumerate(lines):
+    for line in lines:
         try:
             line = line.strip()
 
