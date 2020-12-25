@@ -71,7 +71,7 @@ def convert_root_entry(root_str: str) -> str:
     blkid_out = getoutput(cmd)
     *_, partuuid_str = blkid_out.split(' ')
     partuuid_str = partuuid_str.replace('"', '')
-    breakpoint()
+
     return partuuid_str
 
 

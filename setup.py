@@ -1,12 +1,13 @@
+from pathlib import Path
 from setuptools import setup
 
 
-reqs = Path('requirements.txt') \ 
+reqs = Path('requirements.txt') \
          .read_text() \
          .split('\n')
 
 setup(name="g2sd",
-      version="1.3.0",
+      version="1.3.1",
       description="Convert GRUB menu entries into Systemd-boot boot loaders.",
       url="https://github.com/thismachinechills/grub2systemd",
       author="thismachinechills (Alex)",
