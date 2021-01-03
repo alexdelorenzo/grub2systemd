@@ -25,10 +25,10 @@ class MenuEntry(NamedTuple):
     initrd: str
 
 
-def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
+def gen_menu_entries(grub_lines: Iterable[str]) -> Iterable[MenuEntry]:
     args: List[str] = []
 
-    for line in lines:
+    for line in grub_lines:
         try:
             line = line.strip()
 
@@ -40,8 +40,8 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
                 args.extend(name)
 
             elif line.startswith("linux"):
-                arg, *_ = KERNEL_RE.findall(line)
-                args.extend(arg)
+                kernel, *_ = KERNEL_RE.findall(line)
+                args.extend(kernel)
 
             elif line.startswith("initrd"):
                 init = INIT_RE.findall(line)
@@ -57,8 +57,8 @@ def gen_menu_entries(lines: Iterable[str]) -> Iterable[MenuEntry]:
 
 def convert_root_entry(root_str: str) -> str:
     if root_str.startswith('UUID'):
-        # _, uuid = root_str.split('=')
         cmd = f"blkid -t {root_str}"
+        # _, uuid = root_str.split('=')
         # cmd = f"blkid -t {uuid}"
 
     elif root_str.startswith("PARTUUID"):
