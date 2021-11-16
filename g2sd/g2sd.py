@@ -1,7 +1,7 @@
 from typing import Iterable, NamedTuple, List
-from re import compile
 from collections import namedtuple
 from subprocess import getoutput
+from re import compile, Pattern
 from pathlib import Path
 from sys import exit
 import logging
@@ -9,12 +9,17 @@ import logging
 import click
 
 
-SUFFIX = "g2sd"
-RC_PARSE_ERR = 1
+RC_PARSE_ERR: int = 1
 
-NAME_RE = compile("menuentry '(?P<name>[\w\d\W\D]*)' -")
-KERNEL_RE = compile("linux(?:[\t ]*)(?P<kernel>.*) root=(?P<root>[\w\d\-=\/]*) (?P<options>.*)")
-INIT_RE = compile("initrd(?:[\t ])(?P<initrd>.*)")
+SUFFIX: str = "g2sd"
+SYSD_FMT: str = """title {name}
+linux {kernel}
+initrd {initrd}
+options {options}"""
+    
+NAME_RE: Pattern = compile("menuentry '(?P<name>[\w\d\W\D]*)' -")
+KERNEL_RE: Pattern = compile("linux(?:[\t ]*)(?P<kernel>.*) root=(?P<root>[\w\d\-=\/]*) (?P<options>.*)")
+INIT_RE: Pattern = compile("initrd(?:[\t ])(?P<initrd>.*)")
 
 
 class MenuEntry(NamedTuple):
@@ -51,18 +56,19 @@ def gen_menu_entries(grub_lines: Iterable[str]) -> Iterable[MenuEntry]:
                 args = []
 
         except Exception as e:
+            logging.exception(e)
             logging.error(f"Error parsing file: {e}")
             exit(RC_PARSE_ERR)
 
 
 def convert_root_entry(root_str: str) -> str:
+    if root_str.startswith("PARTUUID"):
+        return root_str
+
     if root_str.startswith('UUID'):
         cmd = f"blkid -t {root_str}"
         # _, uuid = root_str.split('=')
         # cmd = f"blkid -t {uuid}"
-
-    elif root_str.startswith("PARTUUID"):
-        return root_str
 
     else:
         cmd = f"blkid {root_str}"
@@ -88,9 +94,12 @@ def menuentry_to_systemd(me: MenuEntry) -> str:
     partuuid = convert_root_entry(me.root)
     options = parse_options(me.options)
     line = partuuid, options
-    line_str = ' '.join(line)
+    opt_str = ' '.join(line)
 
-    return f"title {me.name}\nlinux {me.kernel}\ninitrd {me.initrd}\noptions {line_str}"
+    return SYSD_FMT.format(
+        **me._asdict(),
+        options=opt_str
+    )
 
 
 @click.command()
