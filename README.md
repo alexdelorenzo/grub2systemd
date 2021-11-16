@@ -1,6 +1,6 @@
-# grub2systemd
+# Convert your [GRUB2](https://www.gnu.org/software/grub/manual/grub/grub.html) config to [systemd-boot](https://wiki.archlinux.org/title/systemd-boot)
 
-Convert your `grub.cfg` bootloader entries into `systemd-boot` loaders.
+Convert your GRUB `grub.cfg` bootloader entries to `systemd-boot` loaders.
 
 `GRUB_FILE` is usually located in `/boot/grub` and your `ESP_PATH` is usually `/boot` or `/boot/efi`.
 
@@ -11,7 +11,6 @@ Requires `blkid` to be installed on the system.
 `pip3 install g2sd`
 
 ## Usage
-
 `g2sd /boot/grub/grub.cfg /boot`
 
 ### Help
